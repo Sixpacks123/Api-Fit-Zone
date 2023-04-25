@@ -75,21 +75,15 @@ exports.updateExerciseById = (req, res) => {
 };
 
 // Supprimer un exercice spécifique en fonction de son ID
-exports.deleteExerciseById = (req, res) => {
-    Exercise.findById(req.params.exerciseId)
-        .then((exercise) => {
-            if (!exercise) {
-                return res.status(404).json({ message: 'Exercice non trouvé' });
-            }
-            exercise.remove()
-                .then(() => {
-                    res.status(200).json({ message: 'Exercice supprimé avec succès' });
-                })
-                .catch((err) => {
-                    res.status(500).json({ error: err });
-                });
-        })
-        .catch((err) => {
-            res.status(500).json({ error: err });
-        });
+exports.deleteExerciseById = async (req, res) => {
+    try {
+        const exercise = await Exercise.findById(req.params.exerciseId);
+        if (!exercise) {
+            return res.status(404).json({ message: 'Exercice non trouvé' });
+        }
+        await Exercise.deleteOne();
+        res.status(200).json({ message: 'Exercice supprimé avec succès' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 };
