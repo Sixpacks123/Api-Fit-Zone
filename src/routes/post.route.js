@@ -268,11 +268,71 @@
  *         description: Post or comment not found
  *       '500':
  *         description: Internal server error
+ * @swagger
+ * /posts/{postId}/likes:
+ *   post:
+ *     summary: Ajouter un like à un post spécifique en fonction de son ID
+ *     tags: [Posts]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: postId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: L'ID du post à liker
+ *     responses:
+ *       200:
+ *         description: Le post avec le like ajouté
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Post'
+ *       401:
+ *         description: Unauthorized - Token is missing
+ *       403:
+ *         description: Forbidden - Invalid token
+ *       404:
+ *         description: Le post demandé n'existe pas
+ *       500:
+ *         description: Internal server error
+ * @swagger
+ * /posts/{postId}/unlike:
+ *   posts:
+ *     summary: Supprimer un like d'un post spécifique en fonction de son ID
+ *     tags: [Post]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: postId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: L'ID du post dont le like doit être supprimé
+ *     responses:
+ *       200:
+ *         description: Le post avec le like supprimé
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Post'
+ *       401:
+ *         description: Unauthorized - Token is missing
+ *       403:
+ *         description: Forbidden - Invalid token
+ *       404:
+ *         description: Le post demandé n'existe pas.
+ *       500:
+ *         description: Internal server error
  */
 const express = require('express');
 const router = express.Router();
 const { createPost, getAllPosts, getPostById, updatePostById, deletePostById } = require('../controllers/post.controller');
 const { createComment, updateCommentById, deleteCommentById } = require('../controllers/comment.controller');
+const { addLikeToPostById, removeLikeFromPostById } = require('../controllers/post.controller');
+
 const authMiddleware = require('../middlewares/auth.middleware');
 
 // Routes pour les posts
@@ -286,5 +346,9 @@ router.delete('/:postId', authMiddleware,deletePostById);
 router.post('/:postId/comments',authMiddleware, createComment);
 router.put('/:postId/comments/:commentId',authMiddleware, updateCommentById);
 router.delete('/:postId/comments/:commentId',authMiddleware, deleteCommentById);
+
+// Routes pour les likes
+router.post('/:postId/likes', authMiddleware, addLikeToPostById);
+router.delete('/:postId/unlike', authMiddleware, removeLikeFromPostById);
 
 module.exports = router;

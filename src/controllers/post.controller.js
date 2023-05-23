@@ -74,3 +74,43 @@ exports.deletePostById = async (req, res) => {
         res.status(500).json({ message: 'Une erreur est survenue lors de la suppression du post.' });
     }
 };
+
+// Ajouter un like à un post spécifique en fonction de son ID
+exports.addLikeToPostById = async (req, res) => {
+    try {
+        const { postId } = req.params;
+        const userId = req.user._id;
+        const post = await Post.findByIdAndUpdate(
+            postId,
+            { $addToSet: { likes: userId } },
+            { new: true }
+        );
+        if (!post) {
+            return res.status(404).json({ message: 'Le post demandé nexiste pas.' });
+            }
+            res.status(200).json(post);
+        }catch (error){
+            console.error(error);
+            res.status(500).json({ message: 'Une erreur est survenue lors de lajout du like.' });
+            }
+        };
+
+// Supprimer un like d'un post spécifique en fonction de son ID
+        exports.removeLikeFromPostById = async (req, res) => {
+            try {
+                const { postId } = req.params;
+                const userId = req.user._id;
+                const post = await Post.findByIdAndUpdate(
+                    postId,
+                    { $pull: { likes: userId } },
+                    { new: true }
+                );
+                if (!post) {
+                    return res.status(404).json({ message: 'Le post demandé nexiste pas.' });
+                    }
+                    res.status(200).json(post);
+                } catch (error) {
+                    console.error(error);
+                    res.status(500).json({ message: 'Une erreur est survenue lors de la suppression du like.' });
+                }
+            };
