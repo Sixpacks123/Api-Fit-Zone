@@ -101,3 +101,83 @@ exports.deleteProgramById = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+
+
+exports.likeProgram = async (req, res) => {
+    try {
+        const programId = req.params.id;
+        const userId = req.user._id;
+
+        // Vérifie si le programme existe
+        const program = await Program.findById(programId);
+        if (!program) {
+            return res.status(404).json({ message: 'Programme introuvable' });
+        }
+
+        // Vérifie si l'utilisateur a déjà aimé le programme
+        const isAlreadyLiked = program.likes.includes(userId);
+        if (isAlreadyLiked) {
+            return res.status(400).json({ message: 'Vous avez déjà aimé ce programme' });
+        }
+
+        // Ajoute l'utilisateur à la liste des likes du programme
+        program.likes.push(userId);
+        await program.save();
+
+        res.status(200).json({ message: 'Programme aimé avec succès' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Une erreur est survenue lors de l\'ajout de like' });
+    }
+};
+
+exports.commentProgram = async (req, res) => {
+    try {
+        const programId = req.params.id;
+        const userId = req.user._id;
+        const { content } = req.body;
+
+        // Vérifie si le programme existe
+        const program = await Program.findById(programId);
+        if (!program) {
+            return res.status(404).json({ message: 'Programme introuvable' });
+        }
+
+        // Ajoute le commentaire à la liste des commentaires du programme
+        program.comments.push({ author: userId, content });
+        await program.save();
+
+        res.status(200).json({ message: 'Commentaire ajouté avec succès' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Une erreur est survenue lors de l\'ajout de commentaire' });
+    }
+};
+
+exports.unlikeProgramById = async (req, res) => {
+    try {
+        const { programId } = req.params;
+        const userId = req.user._id;
+
+        // Vérifie si le programme existe
+        const program = await Program.findById(programId);
+        if (!program) {
+            return res.status(404).json({ message: 'Le programme n\'existe pas' });
+        }
+
+        // Vérifie si l'utilisateur a déjà aimé le programme
+        const isLiked = program.likes.includes(userId);
+        if (!isLiked) {
+            return res.status(400).json({ message: 'Vous n\'avez pas encore aimé ce programme' });
+        }
+
+        // Retire l'utilisateur de la liste des personnes ayant aimé le programme
+        program.likes.pull(userId);
+        await program.save();
+
+        res.status(200).json({ message: 'Le programme a été retiré de vos favoris' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Une erreur est survenue lors de la suppression du like' });
+    }
+};

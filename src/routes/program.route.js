@@ -205,28 +205,152 @@
  *         description: The program with the specified ID was not found
  *       500:
  *         description: Internal server error
+ * @swagger
+ * /program/{programId}/like:
+ *   post:
+ *     summary: Like a program
+ *     tags: [Program]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: programId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID of the program to like
+ *     responses:
+ *       200:
+ *         description: OK
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Program not found
+ *       500:
+ *         description: Internal server error
+ * @swagger
+ * /program/{programId}/unlike:
+ *   delete:
+ *     summary: Retire un like d'un programme spécifique
+ *     description: Retire un like d'un programme spécifique pour l'utilisateur connecté.
+ *     tags:
+ *       - Program
+ *     parameters:
+ *       - in: path
+ *         name: programId
+ *         description: L'ID du programme à unliker.
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Le like a été retiré avec succès.
+ *       400:
+ *         description: L'utilisateur n'a pas encore liké le programme.
+ *       401:
+ *         description: L'utilisateur doit être connecté pour retirer un like.
+ *       404:
+ *         description: Le programme spécifié n'a pas été trouvé.
+ *       500:
+ *         description: Une erreur est survenue du côté serveur.
+ * @swagger
+ * /program/{programId}/comments:
+ *   post:
+ *     summary: Commenter un programme
+ *     tags:
+ *       - Program
+ *     description: Permet de commenter un programme existant
+ *     parameters:
+ *       - in: path
+ *         name: programId
+ *         description: ID du programme à commenter
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       description: Contenu du commentaire
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               content:
+ *                 type: string
+ *                 description: Contenu du commentaire
+ *                 example: "Super programme, je vais l'essayer !"
+ *     responses:
+ *       201:
+ *         description: Commentaire ajouté avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 comment:
+ *                   type: object
+ *                   description: Informations sur le commentaire ajouté
+ *                   properties:
+ *                     _id:
+ *                       type: string
+ *                       description: ID du commentaire
+ *                     content:
+ *                       type: string
+ *                       description: Contenu du commentaire
+ *                     createdBy:
+ *                       type: object
+ *                       description: Utilisateur ayant créé le commentaire
+ *                       properties:
+ *                         _id:
+ *                           type: string
+ *                           description: ID de l'utilisateur
+ *                         username:
+ *                           type: string
+ *                           description: Nom d'utilisateur de l'utilisateur
+ *       400:
+ *         description: Requête invalide (paramètres manquants, etc.)
+ *       401:
+ *         description: Non autorisé (utilisateur non authentifié)
+ *       404:
+ *         description: Programme non trouvé
+ *       500:
+ *         description: Erreur serveur
  */
+
+
+
+
 
 const express = require('express');
 
 const router = express.Router();
 
-const { createProgram, getAllPrograms, getProgramById, updateProgramById, deleteProgramById } = require("../controllers/program.controller");
+const Program = require("../controllers/program.controller");
 const authMiddleware = require('../middlewares/auth.middleware');
 
 // Créer un nouveau programme de musculation
-router.post('/',authMiddleware, createProgram);
+router.post('/',authMiddleware, Program.createProgram);
 
 // Récupérer tous les programmes de musculation
-router.get('/', authMiddleware,getAllPrograms);
+router.get('/', authMiddleware,Program.getAllPrograms);
 
 // Récupérer un programme de musculation spécifique en fonction de son ID
-router.get('/:programId',authMiddleware, getProgramById);
+router.get('/:programId',authMiddleware, Program.getProgramById);
 
 // Mettre à jour un programme de musculation spécifique en fonction de son ID
-router.put('/:programId',authMiddleware, updateProgramById);
+router.put('/:programId',authMiddleware, Program.updateProgramById);
 
 // Supprimer un programme de musculation spécifique en fonction de son ID
-router.delete('/:programId',authMiddleware, deleteProgramById);
+router.delete('/:programId',authMiddleware, Program.deleteProgramById);
+// Like a program
+router.post('/:programId/like', authMiddleware, Program.likeProgram);
+
+// Dislike a program
+router.post('/:programId/dislike', authMiddleware, Program.unlikeProgramById);
+
+// Add a comment to a program
+router.post('/:programId/comments', authMiddleware, Program.commentProgram);
 
 module.exports = router;

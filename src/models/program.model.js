@@ -12,6 +12,21 @@ const exerciseSchema = new mongoose.Schema({
     }
 });
 
+const commentSchema = new mongoose.Schema({
+    content: {
+        type: String,
+        required: true
+    },
+    author: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
+    }
+});
+
 const programSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -47,7 +62,12 @@ const programSchema = new mongoose.Schema({
     creator: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
-    }
+    },
+    likes: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }],
+    comments: [commentSchema]
 });
 
 const Program = mongoose.model('Program', programSchema);
