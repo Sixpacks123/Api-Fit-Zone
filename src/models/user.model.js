@@ -21,7 +21,13 @@ const userSchema = new mongoose.Schema({
     age: Number,
     height: Number,
     weight: Number,
-    fitnessLevel: String
+    fitnessLevel: String,
+    followers: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User'
+        }
+    ]
 });
 
 const User = mongoose.model('User', userSchema);
