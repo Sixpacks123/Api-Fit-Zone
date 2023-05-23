@@ -189,20 +189,26 @@ const express = require('express');
 const router = express.Router();
 const { createExercise, getAllExercises, getExerciseById, updateExerciseById, deleteExerciseById } = require('../controllers/exercise.controller');
 const authMiddleware = require('../middlewares/auth.middleware');
+const validatorMiddleware = require('../middlewares/validator.middleware');
 
+const {    exerciseSchema,
+    createExerciseSchema,
+    updateExerciseSchema,
+    getExerciseByIdSchema,
+    deleteExerciseByIdSchema} = require('../schema/exercise.schema');
 // Créer un nouvel exercice
-router.post('/', authMiddleware,createExercise);
+router.post('/', authMiddleware, validatorMiddleware(createExerciseSchema),createExercise);
 
 // Récupérer tous les exercices
 router.get('/',authMiddleware, getAllExercises);
 
 // Récupérer un exercice spécifique en fonction de son ID
-router.get('/:exerciseId',authMiddleware, getExerciseById);
+router.get('/:exerciseId',authMiddleware, validatorMiddleware(getExerciseByIdSchema), getExerciseById);
 
 // Mettre à jour un exercice spécifique en fonction de son ID
-router.put('/:exerciseId',authMiddleware, updateExerciseById);
+router.put('/:exerciseId',authMiddleware,validatorMiddleware(updateExerciseSchema), updateExerciseById);
 
 // Supprimer un exercice spécifique en fonction de son ID
-router.delete('/:exerciseId', deleteExerciseById);
+router.delete('/:exerciseId',validatorMiddleware(deleteExerciseByIdSchema), deleteExerciseById);
 
 module.exports = router;

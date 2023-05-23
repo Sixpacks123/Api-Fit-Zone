@@ -104,8 +104,8 @@
  *                 type: string
  *                 description: The password of the user
  *             example:
- *               email: johndoe@example.com
- *               password: secret123
+ *               email: aub.heurtault@gmail.com
+ *               password: AubinAubin
  *     responses:
  *       200:
  *         description: Authentication successful, returns JWT token
@@ -175,15 +175,18 @@
  *         description: Internal server error*/
 const express = require('express');
 const router = express.Router();
-const { register, login,getUser,forgotPassword} = require('../controllers/auth.controller')
+const { register, login, getUser, forgotPassword } = require('../controllers/auth.controller');
 const authMiddleware = require('../middlewares/auth.middleware');
-// Route pour créer un nouvel utilisateur
-router.post('/signup', register);
+const validatorMiddleware = require('../middlewares/validator.middleware');
+const { loginSchema,registerSchema } = require('../schema/auth.schema');
 
-// Route pour connecter un utilisateur existant
-router.post('/signin', login);
+// Route to create a new user
+router.post('/signup', validatorMiddleware(registerSchema), register);
 
-router.get('/me', authMiddleware ,getUser);
+// Route to authenticate an existing user
+router.post('/signin', validatorMiddleware(loginSchema), login);
+
+router.get('/me', authMiddleware, getUser);
 router.post('/forgot-password/:email', forgotPassword);
 
 module.exports = router;

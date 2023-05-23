@@ -28,12 +28,12 @@
  *           description: The date and time the post was created
  *
  * @swagger
- * /posts:
+ * /post:
  *   post:
  *     summary: Create a new post
  *     description: Create a new post with the specified title and content
  *     tags:
- *       - Posts
+ *       - post
  *     requestBody:
  *       description: Post object to create
  *       required: true
@@ -61,12 +61,12 @@
  *       '500':
  *         description: Internal server error
  * @swagger
- * /posts:
+ * /post:
  *   get:
- *     summary: Get all posts
- *     description: Get a list of all posts, sorted by most recent first
+ *     summary: Get all post
+ *     description: Get a list of all post, sorted by most recent first
  *     tags:
- *       - Posts
+ *       - post
  *     produces:
  *       - application/json
  *     responses:
@@ -81,12 +81,12 @@
  *       '500':
  *         description: Internal server error
  * @swagger
- * /posts/{postId}:
+ * /post/{postId}:
  *   get:
  *     summary: Get a post by ID
  *     description: Get the post with the specified ID
  *     tags:
- *       - Posts
+ *       - post
  *     produces:
  *       - application/json
  *     parameters:
@@ -108,12 +108,12 @@
  *       '500':
  *         description: Internal server error
  * @swagger
- * /posts/{postId}:
+ * /post/{postId}:
  *   put:
  *     summary: Update a post by ID
  *     description: Update the post with the specified ID
  *     tags:
- *       - Posts
+ *       - post
  *     requestBody:
  *       description: Post object to update
  *       required: true
@@ -142,12 +142,12 @@
  *       '500':
  *         description: Internal server error
  * @swagger
- * /posts/{postId}:
+ * /post/{postId}:
  *   delete:
  *     summary: Delete a post by ID
  *     description: Delete the post with the specified ID
  *     tags:
- *       - Posts
+ *       - post
  *     parameters:
  *       - name: postId
  *         in: path
@@ -163,7 +163,7 @@
  *       '500':
  *         description: Internal server error
  * @swagger
- * /posts/{postId}/comments:
+ * /post/{postId}/comments:
  *   post:
  *     summary: Create a new comment on a post
  *     description: Create a new comment on the post with the specified ID
@@ -202,7 +202,7 @@
  *       '500':
  *         description: Internal server error
  * @swagger
- * /posts/{postId}/comments/{commentId}:
+ * /post/{postId}/comments/{commentId}:
  *   put:
  *     summary: Update a comment by ID
  *     description: Update the comment with the specified ID on the post with the specified ID
@@ -242,7 +242,7 @@
  *       '500':
  *         description: Internal server error
  * @swagger
- * /posts/{postId}/comments/{commentId}:
+ * /post/{postId}/comments/{commentId}:
  *   delete:
  *     summary: Delete a comment by ID
  *     description: Delete the comment with the specified ID on the post with the specified ID
@@ -269,10 +269,10 @@
  *       '500':
  *         description: Internal server error
  * @swagger
- * /posts/{postId}/likes:
+ * /post/{postId}/likes:
  *   post:
  *     summary: Ajouter un like à un post spécifique en fonction de son ID
- *     tags: [Posts]
+ *     tags: [post]
  *     security:
  *       - BearerAuth: []
  *     parameters:
@@ -298,8 +298,8 @@
  *       500:
  *         description: Internal server error
  * @swagger
- * /posts/{postId}/unlike:
- *   posts:
+ * /post/{postId}/unlike:
+ *   post:
  *     summary: Supprimer un like d'un post spécifique en fonction de son ID
  *     tags: [Post]
  *     security:
@@ -332,23 +332,33 @@ const router = express.Router();
 const { createPost, getAllPosts, getPostById, updatePostById, deletePostById } = require('../controllers/post.controller');
 const { createComment, updateCommentById, deleteCommentById } = require('../controllers/comment.controller');
 const { addLikeToPostById, removeLikeFromPostById } = require('../controllers/post.controller');
+const validatorMiddleware = require('../middlewares/validator.middleware');
+const { postCreateSchema,
+    postUpdateSchema,
+    commentCreateSchema,
+    commentUpdateSchema,
+    likeAddSchema,
+    likeRemoveSchema,
+    commentDeleteSchema,
+    postDeleteSchema,
+    postGetByIdSchema} = require('../schema/post.schema');
 
 const authMiddleware = require('../middlewares/auth.middleware');
 
-// Routes pour les posts
-router.post('/',authMiddleware, createPost);
+// Routes pour les post
+router.post('/',authMiddleware,validatorMiddleware(postCreateSchema), createPost);
 router.get('/', authMiddleware,getAllPosts);
-router.get('/:postId',authMiddleware, getPostById);
-router.put('/:postId',authMiddleware,updatePostById);
-router.delete('/:postId', authMiddleware,deletePostById);
+router.get('/:postId',authMiddleware,validatorMiddleware(postGetByIdSchema), getPostById);
+router.put('/:postId',authMiddleware ,validatorMiddleware(postUpdateSchema),updatePostById);
+router.delete('/:postId', authMiddleware,validatorMiddleware(postDeleteSchema),deletePostById);
 
 // Routes pour les commentaires
-router.post('/:postId/comments',authMiddleware, createComment);
-router.put('/:postId/comments/:commentId',authMiddleware, updateCommentById);
-router.delete('/:postId/comments/:commentId',authMiddleware, deleteCommentById);
+router.post('/:postId/comments',authMiddleware,validatorMiddleware(commentCreateSchema), createComment);
+router.put('/:postId/comments/:commentId',authMiddleware,validatorMiddleware(commentUpdateSchema), updateCommentById);
+router.delete('/:postId/comments/:commentId',authMiddleware, validatorMiddleware(commentDeleteSchema),deleteCommentById);
 
 // Routes pour les likes
-router.post('/:postId/likes', authMiddleware, addLikeToPostById);
-router.delete('/:postId/unlike', authMiddleware, removeLikeFromPostById);
+router.post('/:postId/likes', authMiddleware,validatorMiddleware(likeAddSchema), addLikeToPostById);
+router.delete('/:postId/unlike', authMiddleware,validatorMiddleware(likeRemoveSchema), removeLikeFromPostById);
 
 module.exports = router;

@@ -329,28 +329,37 @@ const router = express.Router();
 
 const Program = require("../controllers/program.controller");
 const authMiddleware = require('../middlewares/auth.middleware');
+const validatorMiddleware = require('../middlewares/validator.middleware');
+
+const {programSchema,
+    updateProgramSchema,
+    getProgramByIdSchema,
+    deleteProgramByIdSchema,
+    likeProgramSchema,
+    unlikeProgramSchema,
+    commentProgramSchema} = require('../schema/post.schema');
 
 // Créer un nouveau programme de musculation
-router.post('/',authMiddleware, Program.createProgram);
+router.post('/',authMiddleware,validatorMiddleware(programSchema), Program.createProgram);
 
 // Récupérer tous les programmes de musculation
 router.get('/', authMiddleware,Program.getAllPrograms);
 
 // Récupérer un programme de musculation spécifique en fonction de son ID
-router.get('/:programId',authMiddleware, Program.getProgramById);
+router.get('/:programId',authMiddleware, validatorMiddleware(getProgramByIdSchema), Program.getProgramById);
 
 // Mettre à jour un programme de musculation spécifique en fonction de son ID
-router.put('/:programId',authMiddleware, Program.updateProgramById);
+router.put('/:programId',authMiddleware,validatorMiddleware(updateProgramSchema), Program.updateProgramById);
 
 // Supprimer un programme de musculation spécifique en fonction de son ID
-router.delete('/:programId',authMiddleware, Program.deleteProgramById);
+router.delete('/:programId',authMiddleware, validatorMiddleware(deleteProgramByIdSchema),Program.deleteProgramById);
 // Like a program
-router.post('/:programId/like', authMiddleware, Program.likeProgram);
+router.post('/:programId/like', authMiddleware, validatorMiddleware(likeProgramSchema), Program.likeProgram);
 
 // Dislike a program
-router.post('/:programId/dislike', authMiddleware, Program.unlikeProgramById);
+router.post('/:programId/dislike', authMiddleware, validatorMiddleware(unlikeProgramSchema), Program.unlikeProgramById);
 
 // Add a comment to a program
-router.post('/:programId/comments', authMiddleware, Program.commentProgram);
+router.post('/:programId/comments', authMiddleware, validatorMiddleware(commentProgramSchema), Program.commentProgram);
 
 module.exports = router;
