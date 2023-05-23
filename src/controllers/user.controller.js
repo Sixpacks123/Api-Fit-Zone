@@ -1,85 +1,48 @@
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
 const db = require('../models');
 const User = db.user;
 
-exports.register = async (req, res) => {
+exports.followUser = async (req, res) => {
     try {
-        const { username, password, email, firstName, lastName, gender, age, height, weight, fitnessLevel } = req.body;
+        const { userIdToFollow } = req.params;
+        const userId = req.user._id;
 
-        // Vérifie si l'utilisateur existe déjà
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-            return res.status(409).json({ message: 'L\'utilisateur existe déjà' });
+        // Vérifie si l'utilisateur à suivre existe
+        const userToFollow = await User.findById(userIdToFollow);
+        if (!userToFollow) {
+            return res.status(404).json({ message: 'L\'utilisateur à suivre n\'existe pas' });
         }
 
-        // Hache le mot de passe
-        const hashedPassword = await bcrypt.hash(password, 10);
+        // Vérifie si l'utilisateur a déjà suivi l'utilisateur en question
+        const isAlreadyFollowing = userToFollow.followers.includes(userId);
+        if (isAlreadyFollowing) {
+            return res.status(400).json({ message: 'Vous suivez déjà cet utilisateur' });
+        }
 
-        // Crée un nouvel utilisateur
-        const user = await User.create({
-            username,
-            password: hashedPassword,
-            email,
-            firstName,
-            lastName,
-            gender,
-            age,
-            height,
-            weight,
-            fitnessLevel
-        });
+        // Ajoute l'utilisateur à la liste des followers de l'utilisateur à suivre
+        userToFollow.followers.push(userId);
+        await userToFollow.save();
 
-        // Crée un token JWT
-        const token = jwt.sign({ email: user.email, id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-        res.status(201).json({ user, token });
+        res.status(200).json({ message: 'Vous suivez maintenant cet utilisateur' });
     } catch (error) {
-        res.status(500).json({ message: 'Une erreur est survenue lors de l\'enregistrement de l\'utilisateur' });
+        console.error(error);
+        res.status(500).json({ message: 'Une erreur est survenue lors du suivi de l\'utilisateur' });
     }
 };
 
-exports.login = async (req, res) => {
+exports.getFollowers = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const userId = req.user._id;
 
-        // Vérifie si l'utilisateur existe
-        const existingUser = await User.findOne({ email });
-        if (!existingUser) {
-            return res.status(404).json({ message: 'L\'utilisateur n\'existe pas' });
-        }
-
-        // Vérifie si le mot de passe est correct
-        const isPasswordCorrect = await bcrypt.compare(password, existingUser.password);
-        if (!isPasswordCorrect) {
-            return res.status(400).json({ message: 'Mot de passe incorrect' });
-        }
-
-        // Crée un token JWT
-        const token = jwt.sign({ email: existingUser.email, id: existingUser._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-        res.status(200).json({ token: token });
-    } catch (error) {
-        res.status(500).json({ message: 'Une erreur est survenue lors de la connexion' });
-    }
-};
-
-exports.getUser = async (req, res) => {
-    try {
-        // Extract the user's email and ID from the JWT token
-        const decodedToken = jwt.verify(req.headers.authorization.split(' ')[1], process.env.JWT_SECRET);
-        const userEmail = decodedToken.email;
-        const userId = decodedToken.id;
-
-        // Look up the user in the database based on the email and ID
-        const user = await User.findOne({ email: userEmail, _id: userId }).select('-password');
+        // Récupère les informations de l'utilisateur en question, avec sa liste de followers
+        const user = await User.findById(userId).populate('followers');
 
         if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+            return res.status(404).json({ message: 'Utilisateur non trouvé' });
         }
 
-        res.status(200).json(user);
+        res.status(200).json(user.followers);
     } catch (error) {
-        res.status(500).json({ message: 'An error occurred while retrieving the user' });
+        console.error(error);
+        res.status(500).json({ message: 'Une erreur est survenue lors de la récupération des followers' });
     }
 };
