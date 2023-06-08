@@ -22,6 +22,7 @@ const userSchema = new mongoose.Schema({
     height: Number,
     weight: Number,
     fitnessLevel: String,
+    profileImage: String, // Champ pour le chemin de l'image de profil
     followers: [
         {
             type: mongoose.Schema.Types.ObjectId,
