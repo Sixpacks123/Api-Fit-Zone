@@ -3,7 +3,8 @@ const jwt = require('jsonwebtoken');
 const db = require('../models');
 const User = db.user;
 const sgMail = require('@sendgrid/mail');
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+// TODO : remove this to env
+sgMail.setApiKey('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')
 
 exports.register = async (req, res) => {
     try {
@@ -97,32 +98,57 @@ exports.forgotPassword = async (req, res) => {
             return res.status(400).json({ message: 'Invalid email format' });
         }
 
-        // Vérifie si l'utilisateur existe
+        // Check if the user exists
         const user = await User.findOne({ email });
         if (!user) {
             return res.status(404).json({ message: 'L\'utilisateur n\'existe pas' });
         }
 
-        // Crée un token JWT avec une expiration courte
-        const token = jwt.sign({ email: user.email, id: user._id }, process.env.JWT_SECRET, { expiresIn: '15m' });
+        // Generate a new random password
+        const newPassword = generateRandomPassword();
 
-        // Envoie un e-mail avec un lien pour réinitialiser le mot de passe
+        // Hash the new password
+        // Update the user's password in the database
+        user.password = await bcrypt.hash(newPassword, 10);
+        await user.save();
+
+        // Send the new password via email
         const msg = {
             to: email,
-            from: 'fitzone@myyahoo.com',
+            from: 'aub.heurtault@gmail.com',
             subject: 'Réinitialisation de votre mot de passe',
             html: `
-                <p>Bonjour,</p>
-                <p>Vous avez demandé la réinitialisation de votre mot de passe. Pour procéder, veuillez cliquer sur le lien ci-dessous :</p>
-                <p>Ce lien est valide pendant 15 minutes à partir de l'heure d'envoi de cet e-mail.</p>
-                <p>Si vous n'avez pas demandé la réinitialisation de votre mot de passe, vous pouvez ignorer cet e-mail.</p>
-            `,
+        <p>Bonjour,</p>
+        <p>Votre mot de passe a été réinitialisé avec succès. Voici votre nouveau mot de passe :</p>
+        <h3>${newPassword}</h3>
+        <p>Assurez-vous de changer votre mot de passe une fois connecté.</p>
+        <p style="color:red">Si vous n'avez pas demandé la réinitialisation de votre mot de passe, veuillez contacter l'assistance.</p>
+        <p>Cordialement,</p>
+        <p>L'équipe de FitZone</p>
+      `,
         };
-        await sgMail.send(msg);
 
-        res.status(200).json({ message: 'Un e-mail pour réinitialiser votre mot de passe a été envoyé à votre adresse e-mail' });
+        sgMail
+            .send(msg)
+            .then(() => {
+                res.status(200).json({ message: 'Un e-mail avec un nouveau mot de passe a été envoyé à votre adresse e-mail' });
+            })
+            .catch((error) => {
+                console.error(error);
+                res.status(500).json({ message: 'Une erreur est survenue lors de l\'envoi de l\'e-mail avec le nouveau mot de passe' });
+            });
     } catch (error) {
         res.status(500).json({ message: 'Une erreur est survenue lors de la réinitialisation du mot de passe' });
     }
 };
+
+// Function to generate a random password
+function generateRandomPassword() {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let password = '';
+    for (let i = 0; i < 8; i++) {
+        password += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    return password;
+}
 
