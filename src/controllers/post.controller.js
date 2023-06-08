@@ -4,8 +4,7 @@ const Post = require('../models/post.model');
 exports.createPost = async (req, res) => {
     try {
         const { title, content } = req.body;
-        const userId = req.user._id; // L'ID de l'utilisateur est extrait de l'objet `req.user` créé par middleware d'authentification
-        const post = new Post({ title, content, user: userId });
+        const post = new Post({ title, content, user: req.user.id });
         const savedPost = await post.save();
         res.status(201).json(savedPost);
     } catch (error) {
@@ -17,7 +16,7 @@ exports.createPost = async (req, res) => {
 // Récupérer tous les posts
 exports.getAllPosts = async (req, res) => {
     try {
-        const posts = await Post.find().populate('user', 'username');
+        const posts = await Post.find().populate('user', 'firstname');
         res.status(200).json(posts);
     } catch (error) {
         console.error(error);
