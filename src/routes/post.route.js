@@ -273,8 +273,6 @@
  *   post:
  *     summary: Ajouter un like à un post spécifique en fonction de son ID
  *     tags: [post]
- *     security:
- *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: postId
@@ -302,8 +300,6 @@
  *   post:
  *     summary: Supprimer un like d'un post spécifique en fonction de son ID
  *     tags: [Post]
- *     security:
- *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: postId
@@ -348,7 +344,7 @@ const authMiddleware = require('../middlewares/auth.middleware');
 // Routes pour les post
 router.post('/',authMiddleware,validatorMiddleware(postCreateSchema), createPost);
 router.get('/', authMiddleware,getAllPosts);
-router.get('/:postId',authMiddleware,validatorMiddleware(postGetByIdSchema), getPostById);
+router.get('/:postId',authMiddleware, getPostById);
 router.put('/:postId',authMiddleware ,validatorMiddleware(postUpdateSchema),updatePostById);
 router.delete('/:postId', authMiddleware,validatorMiddleware(postDeleteSchema),deletePostById);
 

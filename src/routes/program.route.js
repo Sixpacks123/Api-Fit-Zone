@@ -317,6 +317,31 @@
  *         description: Programme non trouvé
  *       500:
  *         description: Erreur serveur
+ * @swagger
+ * /user/programs/{userId}:
+ *   get:
+ *     summary: Get programs created by a specific user
+ *     tags: [User]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         description: The ID of the user
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: List of programs created by the user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Program'
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
  */
 
 
@@ -361,5 +386,7 @@ router.post('/:programId/dislike', authMiddleware, validatorMiddleware(unlikePro
 
 // Add a comment to a program
 router.post('/:programId/comments', authMiddleware, validatorMiddleware(commentProgramSchema), Program.commentProgram);
+
+router.get('/programs/:userId', Program.getProgramsByUser);
 
 module.exports = router;
