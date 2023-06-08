@@ -105,11 +105,10 @@ exports.deleteProgramById = async (req, res) => {
 
 exports.likeProgram = async (req, res) => {
     try {
-        const programId = req.params.id;
         const userId = req.user._id;
 
         // Vérifie si le programme existe
-        const program = await Program.findById(programId);
+        const program = await Program.findById(req.params.programId);
         if (!program) {
             return res.status(404).json({ message: 'Programme introuvable' });
         }
@@ -179,5 +178,24 @@ exports.unlikeProgramById = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Une erreur est survenue lors de la suppression du like' });
+    }
+};
+exports.getProgramsByUser = async (req, res) => {
+    try {
+        const userId = req.params.userId;
+
+        // Vérifie si l'utilisateur existe
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Récupère les programmes créés par l'utilisateur
+        const programs = await Program.find({ creator: userId });
+
+        res.status(200).json(programs);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'An error occurred while retrieving user programs' });
     }
 };
