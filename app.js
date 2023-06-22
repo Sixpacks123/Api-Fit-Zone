@@ -24,7 +24,7 @@ const options = {
         servers: [
             {
                 // TODO remove to env
-                url: "https://129f-83-118-208-130.ngrok-free.app/",
+                url: "https://fa50-83-118-208-130.ngrok-free.app",
             },
         ],
         components: {

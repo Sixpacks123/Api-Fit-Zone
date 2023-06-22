@@ -74,17 +74,19 @@ exports.deleteUser = async (req, res) => {
         res.status(500).json({ message: 'Une erreur est survenue lors de la suppression du compte utilisateur' });
     }
 };
+
 exports.updateUser = async (req, res) => {
     try {
+        const userId = req.user.id;
 
-        // Vérifie si l'utilisateur existe
-        console.log(req.user.id)
-        const user = await User.findById(req.user.id);
+        // Find the user in the database
+        const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
         // Update the user information with the data provided in the request body
+        user.username  = req.body.username;
         user.firstName = req.body.firstName;
         user.lastName = req.body.lastName;
         user.gender = req.body.gender;
@@ -108,3 +110,4 @@ exports.updateUser = async (req, res) => {
         res.status(500).json({ message: 'An error occurred while updating user information' });
     }
 };
+

@@ -8,7 +8,6 @@ exports.createPost = async (req, res) => {
         const savedPost = await post.save();
         res.status(201).json(savedPost);
     } catch (error) {
-        console.error(error);
         res.status(500).json({ message: 'Une erreur est survenue lors de la création du post.' });
     }
 };
@@ -19,7 +18,6 @@ exports.getAllPosts = async (req, res) => {
         const posts = await Post.find().populate('user', 'firstname');
         res.status(200).json(posts);
     } catch (error) {
-        console.error(error);
         res.status(500).json({ message: 'Une erreur est survenue lors de la récupération des posts.' });
     }
 };
@@ -34,7 +32,6 @@ exports.getPostById = async (req, res) => {
         }
         res.status(200).json(post);
     } catch (error) {
-        console.error(error);
         res.status(500).json({ message: 'Une erreur est survenue lors de la récupération du post.' });
     }
 };
@@ -54,7 +51,6 @@ exports.updatePostById = async (req, res) => {
         }
         res.status(200).json(post);
     } catch (error) {
-        console.error(error);
         res.status(500).json({ message: 'Une erreur est survenue lors de la mise à jour du post.' });
     }
 };
@@ -69,7 +65,6 @@ exports.deletePostById = async (req, res) => {
         }
         res.sendStatus(204);
     } catch (error) {
-        console.error(error);
         res.status(500).json({ message: 'Une erreur est survenue lors de la suppression du post.' });
     }
 };
@@ -85,14 +80,14 @@ exports.addLikeToPostById = async (req, res) => {
             { new: true }
         );
         if (!post) {
-            return res.status(404).json({ message: 'Le post demandé nexiste pas.' });
-            }
-            res.status(200).json(post);
-        }catch (error){
-            console.error(error);
-            res.status(500).json({ message: 'Une erreur est survenue lors de lajout du like.' });
-            }
-        };
+            return res.status(404).json({ message: 'Le post demandé n\'existe pas.' });
+        }
+        res.status(200).json(post);
+    } catch (error) {
+        res.status(500).json({ message: 'Une erreur est survenue lors de l\'ajout du like.' });
+    }
+};
+
 
 // Supprimer un like d'un post spécifique en fonction de son ID
         exports.removeLikeFromPostById = async (req, res) => {
@@ -109,7 +104,6 @@ exports.addLikeToPostById = async (req, res) => {
                     }
                     res.status(200).json(post);
                 } catch (error) {
-                    console.error(error);
                     res.status(500).json({ message: 'Une erreur est survenue lors de la suppression du like.' });
                 }
             };
